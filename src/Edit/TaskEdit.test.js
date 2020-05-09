@@ -6,7 +6,7 @@ import TaskEdit from './TaskEdit';
 describe('TaskEdit tests', () => {
     test('Render TaskEdit component', () => {
         const div = document.createElement('div');
-        ReactDOM.render(<TaskEdit />, div);
+        ReactDOM.render(<TaskEdit id={1} />, div);
         ReactDOM.unmountComponentAtNode(div);
     });
 });
