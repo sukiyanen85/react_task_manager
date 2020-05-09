@@ -6,9 +6,7 @@ import * as serviceWorker from './serviceWorker';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <TaskManager />
-  </React.StrictMode>,
+    <TaskManager />,
   document.getElementById('root')
 );
 
