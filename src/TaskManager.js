@@ -8,11 +8,11 @@ import TaskEdit from './Edit/TaskEdit';
 const routes = {
   '/': () => <TaskList />,
   '/add': () => <TaskAdd />,
-  '/edit:id': ({id}) => <TaskEdit id={id}/>
+  '/edit/:id': ({id}) => <TaskEdit id={id} />
 }
 
 function TaskManager() {
-  return useRoutes(routes);
+  return useRoutes(routes);  
 }
 
 export default TaskManager;
