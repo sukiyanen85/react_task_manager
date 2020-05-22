@@ -3,22 +3,30 @@ import PropTypes from 'prop-types';
 import { Modal, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import Axios from 'axios';
 
 function TaskDelete(props) {
     const [showModal, setShowModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const API_URL = 'http://localhost:3001/tasks/';
 
     function closeModal(){
         setShowModal(false);
     }
 
-    function handleDeleteTask(e){
-        e.preventDefault();
-        const tasks = JSON.parse(localStorage['tasks']);
-        const newTasks = tasks.filter(task => task.id !== props.task.id);
+    function closeErrorModal(){
+        setShowErrorModal(false);
+    }
 
-        localStorage['tasks'] = JSON.stringify(newTasks);
-        setShowModal(false);
-        props.loadTasks(true); 
+    async function handleDeleteTask(e){
+        e.preventDefault();
+        try {
+           await Axios.delete(API_URL + props.task.id)
+           props.loadTasks(true);
+           setShowModal(false);
+        } catch (error) {
+            setShowErrorModal(true);
+        }        
     }
 
     return (
@@ -42,6 +50,20 @@ function TaskDelete(props) {
                     </Button>
                     <Button variant="light" onClick={ () => setShowModal(false)}>
                         No
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showErrorModal} onHide={closeErrorModal} data-testid="modal">
+                <Modal.Header closeButton>
+                  <Modal.Title>Error</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Unfortunately it wasn't possible to delete this task, please try again.
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="warning" onClick={ () => setShowErrorModal(false)}>
+                        Close
                     </Button>
                 </Modal.Footer>
             </Modal>

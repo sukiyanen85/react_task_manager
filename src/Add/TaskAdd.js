@@ -2,22 +2,28 @@ import React, { useState } from 'react';
 import Task from '../models/task.model';
 import { Jumbotron, Form, Button, Modal } from 'react-bootstrap';
 import { navigate, A } from 'hookrouter';
+import Axios from 'axios';
 
 function TaskAdd() {
     const [task, setTask] = useState('');
     const [formValidated, setFormValidated] = useState(false); 
     const [showModal, setShowModal] = useState(false); 
+    const [showErrorModal, setShowErrorModal] = useState(false);
+
+    const API_URL = 'http://localhost:3001/tasks/';
     
     function formSubmited(event) {
         event.preventDefault();
         setFormValidated(true);
     
         if (event.currentTarget.checkValidity() === true) { // If the form is validated
-            const taskStorage = localStorage['tasks'];
-            const tasks = taskStorage ? JSON.parse(taskStorage) : [];
-            tasks.push(new Task(new Date().getTime(), task, false));
-            localStorage['tasks'] = JSON.stringify(tasks);
-            setShowModal(true);
+            Axios.post(API_URL, new Task(null, task, false))
+            .then(function (response) {
+                setShowModal(true);
+            })
+            .catch(function (error) {
+                setShowErrorModal(true);
+            });
         }
     }
 
@@ -27,6 +33,10 @@ function TaskAdd() {
 
     function closeModal(){
         navigate('/');
+    }
+
+    function closeErrorModal(){
+        setShowErrorModal(false);
     }
 
     return (
@@ -56,6 +66,18 @@ function TaskAdd() {
                 <Modal.Body>Task added successfully!</Modal.Body>
                 <Modal.Footer>
                   <Button variant="success" onClick={closeModal}>
+                    Close
+                  </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showErrorModal} onHide={closeErrorModal} data-testid="modal">
+                <Modal.Header closeButton>
+                  <Modal.Title>Error!</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Unfortunately it was not possible to add this task! Please try again.</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="warning" onClick={closeErrorModal}>
                     Close
                   </Button>
                 </Modal.Footer>

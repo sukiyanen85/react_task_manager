@@ -6,6 +6,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import TaskPagination from '../Pagination/TaskPagination'; 
 import TaskTable from './TaskTable'; 
 import TaskSort from './TaskSort'; 
+import axios from 'axios';
 
 function TaskList() {
     const [tasks, setTasks] = useState([]);
@@ -16,29 +17,26 @@ function TaskList() {
     const [orderAsc, setOrderAsc] = useState(false);
     const [orderDesc, setOrderDesc] = useState(false);
 
+    const API_URL = 'http://localhost:3001/tasks/';
     const ITEMS_PER_PAGE = 3;
 
     useEffect(() => {
-        function getTasks(){
-            const tasksStorage = localStorage['tasks'];
-            let taskList = tasksStorage ? JSON.parse(tasksStorage) : [];
+        async function getTasks(){
+            // order
+            let order = '';
+            if(orderAsc)
+                order = 'ASC';
+            else if (orderDesc)
+                order = 'DESC';
 
-            // Filter tasks
-            if(search.length){
-                taskList = taskList.filter(task => {
-                    return task.name.toLowerCase().indexOf(search.toLowerCase()) >= 0;
-                });
+            try {
+                const params = `?page=${currentPage}&order=${order}&items=${ITEMS_PER_PAGE}&search=${search}`;
+                let { data } = await axios.get(API_URL + params);
+                setTotalTasks(data.rows);
+                setTasks(data.tasks);
+            } catch (error) {
+                setTasks([]);
             }
-
-            // Order tasks
-            if(orderAsc){
-                taskList.sort((task1, task2) => (task1.name.toLowerCase() > task2.name.toLowerCase() ? 1 : -1 ));
-            } else if(orderDesc){
-                taskList.sort((task1, task2) => (task1.name.toLowerCase() < task2.name.toLowerCase() ? 1 : -1 ));
-            }
-
-            setTotalTasks(taskList.length);
-            setTasks(taskList.splice((currentPage -1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE));
         }
 
         if(loadTasks){

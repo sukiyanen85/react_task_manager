@@ -2,21 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Jumbotron, Form, Button, Modal } from 'react-bootstrap';
 import { A, navigate } from 'hookrouter';
 import PropTypes from 'prop-types';
+import Axios from 'axios';
+import Task from '../models/task.model';
 
 function TaskEdit(props) {
     const [task, setTask] = useState('');
     const [taskIsLoaded, setTaskIsLoaded] = useState(false);
     const [showModal, setShowModal] = useState(false); 
+    const [showErrorModal, setShowErrorModal] = useState(false); 
     const [formValidated, setFormValidated] = useState(false); 
 
-    useEffect(() => {
-        function loadTask(){
-            const tasks = JSON.parse(localStorage['tasks']);
-            const task = tasks.filter(task => {
-                return task.id === parseInt(props.id)
-            });
+    const API_URL = 'http://localhost:3001/tasks/'
 
-            setTask(task[0].name);
+    useEffect(() => {
+        async function loadTask(){
+            try {
+                let {data } = await Axios.get(API_URL + props.id);
+                setTask(data.name);
+            } catch(error){
+                setShowErrorModal(true);
+            }
         }
     
         if(! taskIsLoaded){
@@ -29,6 +34,10 @@ function TaskEdit(props) {
         setShowModal(false);
         navigate('/');
     }
+    
+    function closeErrorModal(){
+        setShowErrorModal(false);
+    }
 
     function handleTask(event){
         setTask(event.target.value);
@@ -39,17 +48,13 @@ function TaskEdit(props) {
         setFormValidated(true);
     
         if (event.currentTarget.checkValidity() === true) { // If the form is validated
-            const tasks = JSON.parse(localStorage['tasks']);
-            tasks.map(helperTask => {
-                if(helperTask.id === parseInt(props.id)){
-                    helperTask.name = task;
-                }
-
-                return helperTask;
+            Axios.put(API_URL + props.id, new Task(props.id, task, false))
+            .then(function (response) {
+                setShowModal(true);
+            })
+            .catch(function (error) {
+                setShowErrorModal(true);
             });
-
-            localStorage['tasks'] = JSON.stringify(tasks);
-            setShowModal(true);
         }
     }
 
@@ -80,6 +85,18 @@ function TaskEdit(props) {
                 <Modal.Body>Your Task was succesfully updated!</Modal.Body>
                 <Modal.Footer>
                   <Button variant="success" onClick={closeModal}>
+                    Close
+                  </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showErrorModal} onHide={closeErrorModal} data-testid="modal">
+                <Modal.Header closeButton>
+                  <Modal.Title>Error!</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>An error occurred! Please try again.</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="warning" onClick={closeErrorModal}>
                     Close
                   </Button>
                 </Modal.Footer>
